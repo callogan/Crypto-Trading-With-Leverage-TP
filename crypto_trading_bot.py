@@ -1,7 +1,13 @@
+import hashlib
+import hmac
 import os
-from typing import List, Dict, Any, Tuple
-
+import random
 import requests
+import time
+
+from base64 import b64encode
+from datetime import datetime
+from typing import List, Dict, Any, Tuple
 
 
 class WalletManager:
@@ -59,3 +65,64 @@ class ProxyManager:
         if self.proxy_type == "mobile" and "refresh_link" in proxy:
             requests.get(proxy["refresh_link"])
         return proxy
+
+
+class TransactionManager:
+    def __init__(self):
+        self.user_agents = [
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36"
+        ]
+
+    def get_random_user_agent(self) -> str:
+        user_agent = random.choice(self.user_agents)
+        return user_agent
+
+    def _generate_signature(self, private_key: str, message: str) -> str:
+        key = bytes.fromhex(private_key.replace("0x", ""))
+        message_bytes = message.encode("utf-8")
+        signature = hmac.new(key, message_bytes, hashlib.sha256).digest()
+        return b64encode(signature).decode("utf-8")
+
+    def execute_trade(self, wallet_key: str, asset: str, direction: str,
+                      size: float, proxy: Dict) -> Dict[str, Any]:
+        try:
+            # Generate transaction ID
+            tx_id = f"tx_{int(time.time())}_{random.randint(1000, 9999)}"
+
+            # Simulate transaction validation
+            if size > 10000:
+                return {
+                    "status": "failed",
+                    "error": "Insufficient balance",
+                    "timestamp": datetime.now().isoformat(),
+                    "tx_id": tx_id
+                }
+
+            # Simulate transaction processing delay
+            time.sleep(random.uniform(0.5, 2.0))
+
+            # Generate signature
+            message = f"{tx_id}:{asset}:{direction}:{size}"
+            signature = self._generate_signature(wallet_key, message)
+
+            return {
+                "status": "success",
+                "transaction_hash": tx_id,
+                "signature": signature,
+                "timestamp": datetime.now().isoformat(),
+                "details": {
+                    "asset": asset,
+                    "direction": direction,
+                    "size": size,
+                    "wallet": wallet_key[:10] + "..."
+                }
+            }
+
+        except Exception as e:
+            return {
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
