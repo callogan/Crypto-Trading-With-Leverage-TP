@@ -8,8 +8,12 @@ from crypto_trading_bot import TradingSession  # Assuming this is your main modu
 class TestTradingSession(unittest.TestCase):
 
     def setUp(self):
+        """
+        Set up logging and test configuration for the trading session.
+        """
         logging.basicConfig(
-            level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
+            level=logging.DEBUG,
+            format="%(asctime)s - %(levelname)s - %(message)s"
         )
 
         self.config = {
@@ -25,6 +29,10 @@ class TestTradingSession(unittest.TestCase):
 
     @patch("crypto_trading_bot.time.sleep", return_value=None)
     def test_run_session_success(self, mock_sleep):
+        """
+        Test that the trading session executes successfully
+        when wallets and proxies are available.
+        """
         wallet_manager_mock = MagicMock()
         proxy_manager_mock = MagicMock()
         transaction_manager_mock = MagicMock()
@@ -58,6 +66,10 @@ class TestTradingSession(unittest.TestCase):
 
     @patch("crypto_trading_bot.time.sleep", return_value=None)
     def test_run_session_no_wallets(self, mock_sleep):
+        """
+        Test that the trading session does not execute
+        trades when no wallets are available.
+        """
         wallet_manager_mock = MagicMock()
         transaction_manager_mock = MagicMock()
 
@@ -73,8 +85,18 @@ class TestTradingSession(unittest.TestCase):
     @patch("crypto_trading_bot.time.sleep", return_value=None)
     @patch("random.randint")  # Mocking random.randint
     @patch("random.uniform")  # Mocking random.uniform
-    def test_run_session_several_wallets(self, mock_uniform, mock_randint, mock_sleep):
-        # Creation of Mock-objects for wallet managers, proxies and transactions
+    def test_run_session_several_wallets(
+            self,
+            mock_uniform,
+            mock_randint,
+            mock_sleep
+    ):
+        """
+        Test that the trading session executes correctly
+        when multiple wallets are available.
+        """
+        # Creation of Mock-objects for wallet managers,
+        # proxies and transactions
         wallet_manager_mock = MagicMock()
         proxy_manager_mock = MagicMock()
         transaction_manager_mock = MagicMock()
@@ -94,12 +116,11 @@ class TestTradingSession(unittest.TestCase):
 
         # Setting proxy-manager
         proxy_data = {"ip_port": "127.0.0.1:8080", "auth": "user1:pass1"}
-        proxy_manager_mock.get_proxy.side_effect = lambda account_id: proxy_data
+        proxy_manager_mock.get_proxy.side_effect = \
+            lambda account_id: proxy_data
 
         # Setting configuration
         asset = self.config["trading_assets"][0]
-        direction = self.config["position_direction"]
-        size = 15.0  # Average value from volume_percentage_range
 
         # Setting returnable values for random.randint
         mock_randint.side_effect = [
@@ -110,7 +131,8 @@ class TestTradingSession(unittest.TestCase):
         ]
 
         # Setting returnable values for random.uniform
-        mock_uniform.side_effect = [15.0] * 5  # All the transactions have the same size
+        mock_uniform.side_effect =\
+            [15.0] * 5  # All the transactions have the same size
 
         # Creation of session items with Mock-objects
         session = TradingSession(self.config)
@@ -133,14 +155,16 @@ class TestTradingSession(unittest.TestCase):
 
         # Get actual calls
         actual_calls = [
-            call.args for call in transaction_manager_mock.execute_trade.call_args_list
+            call.args for call
+            in transaction_manager_mock.execute_trade.call_args_list
         ]
 
         # Verify number of calls
         self.assertEqual(
             len(actual_calls),
             len(expected_calls),
-            f"Expected {len(expected_calls)} calls but got {len(actual_calls)}",
+            f"Expected {len(expected_calls)} calls "
+            f"but got {len(actual_calls)}",
         )
 
         # Check each expected call
@@ -158,22 +182,31 @@ class TestTradingSession(unittest.TestCase):
 
             # Assert we found the expected call
             assert found_the_right_call, (
-                f"transaction_manager.execute_trade was called with expected args: "
-                f"wallet={expected_call[0]}, asset={expected_call[1]}, "
-                f"direction={expected_call[2]}, size={expected_call[3]}, "
+                f"transaction_manager.execute_trade "
+                f"was called with expected args: "
+                f"wallet={expected_call[0]}, "
+                f"asset={expected_call[1]}, "
+                f"direction={expected_call[2]}, "
+                f"size={expected_call[3]}, "
                 f"proxy={expected_call[4]}"
             )
 
             # Assert we didn't find any unexpected calls
             if bogus_calls:
                 unexpected_calls_str = "\n".join(
-                    f"- wallet={call[0]}, asset={call[1]}, direction={call[2]}, "
-                    f"size={call[3]}, proxy={call[4]}"
+                    f"- wallet={call[0]}, "
+                    f"asset={call[1]}, "
+                    f"direction={call[2]}, "
+                    f"size={call[3]}, "
+                    f"proxy={call[4]}"
                     for call in bogus_calls
                 )
 
     @patch("crypto_trading_bot.time.sleep", return_value=None)
     def test_run_session_no_proxies(self, mock_sleep):
+        """
+        Test that no trades are executed if proxies are not available.
+        """
         wallet_manager_mock = MagicMock()
         proxy_manager_mock = MagicMock()
         transaction_manager_mock = MagicMock()
@@ -183,7 +216,8 @@ class TestTradingSession(unittest.TestCase):
         session.proxy_manager = proxy_manager_mock
         session.transaction_manager = transaction_manager_mock
 
-        wallet_manager_mock.get_next_wallet.return_value = ("wallet_1", "key_1")
+        wallet_manager_mock.get_next_wallet.return_value =\
+            ("wallet_1", "key_1")
         proxy_manager_mock.get_proxy.return_value = None
 
         session.run_session("branch")
@@ -195,6 +229,10 @@ class TestTradingSession(unittest.TestCase):
     def test_run_session_single_proxy(
         self, mock_random_randint, mock_random_uniform, mock_sleep
     ):
+        """
+        Test that all trades use the same proxy
+        when only one proxy is available.
+        """
         # Set up the mock to return appropriate values for different calls
         mock_random_randint.side_effect = [
             2,  # For branch_size (called with branch_range)
@@ -229,10 +267,12 @@ class TestTradingSession(unittest.TestCase):
         for call in transaction_manager_mock.execute_trade.call_args_list:
             _, _, _, _, proxy = call.args
             self.assertEqual(
-                proxy, test_proxy, "Each trade should use the configured test proxy"
+                proxy, test_proxy,
+                "Each trade should use the configured test proxy"
             )
 
-        # Verify random.randint was called correctly with actual arguments from implementation
+        # Verify random.randint was called correctly
+        # with actual arguments from implementation
         mock_random_randint.assert_has_calls(
             [
                 call(2, 3),  # First call for branch_size

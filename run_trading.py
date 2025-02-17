@@ -4,6 +4,12 @@ from crypto_trading_bot import TradingSession
 
 
 def main():
+    """
+    Main function, which settings up logging,
+    configures trade session, executes both branch
+    and parallel trading
+    """
+
     # Configure logging
     logging.basicConfig(
         level=logging.INFO,
@@ -17,8 +23,8 @@ def main():
         "proxy_type": "regular",
         "enable_logs": True,
         "enable_shuffling": True,
-        "thread_count": 2,  # Start with small number for testing
-        "launch_delay": (5, 10),  # Short delays for testing
+        "thread_count": 2,  # Start with small number
+        "launch_delay": (5, 10),  # Short delays
         "branch_wallet_range": (2, 3),
         "max_parallel_branches": 2,
         "trading_assets": ["BTC", "ETH", "SOL"],
@@ -32,15 +38,15 @@ def main():
 
     try:
 
-        # Test parallel trading
-        logging.info("Starting parallel trading test...")
-        session.execute_parallel_trading()
-        logging.info("Parallel trading completed")
-
-        # Test branch trading
-        logging.info("Starting branch trading test...")
+        # Executes branch trading
+        logging.info("Starting branch trading ...")
         session.execute_branch_trading()
         logging.info("Branch trading completed")
+
+        # Executes parallel trading
+        logging.info("Starting parallel trading ...")
+        session.execute_parallel_trading()
+        logging.info("Parallel trading completed")
 
     except Exception as e:
         logging.error(f"Trading error: {str(e)}")
