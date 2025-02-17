@@ -45,19 +45,14 @@ class ProxyManager:
             proxies = []
             for line in f:
                 if "|" in line:  # Mobile proxy
-                    proxy_data, refresh_link = line.strip().split('|')
+                    proxy_data, refresh_link = line.strip().split("|")
                     ip_port, auth = proxy_data.split("@")
-                    proxies.append({
-                        "ip_port": ip_port,
-                        "auth": auth,
-                        "refresh_link": refresh_link
-                    })
+                    proxies.append(
+                        {"ip_port": ip_port, "auth": auth, "refresh_link": refresh_link}
+                    )
                 else:  # Regular proxy
-                    ip_port, auth = line.strip().split('@')
-                    proxies.append({
-                        "ip_port": ip_port,
-                        "auth": auth
-                    })
+                    ip_port, auth = line.strip().split("@")
+                    proxies.append({"ip_port": ip_port, "auth": auth})
             return proxies
 
     def get_proxy(self, account_id: int) -> Dict:
@@ -72,7 +67,7 @@ class TransactionManager:
         self.user_agents = [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-            "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36"
+            "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36",
         ]
 
     def get_random_user_agent(self) -> str:
@@ -85,8 +80,9 @@ class TransactionManager:
         signature = hmac.new(key, message_bytes, hashlib.sha256).digest()
         return b64encode(signature).decode("utf-8")
 
-    def execute_trade(self, wallet_key: str, asset: str, direction: str,
-                      size: float, proxy: Dict) -> Dict[str, Any]:
+    def execute_trade(
+        self, wallet_key: str, asset: str, direction: str, size: float, proxy: Dict
+    ) -> Dict[str, Any]:
         try:
             # Generate transaction ID
             tx_id = f"tx_{int(time.time())}_{random.randint(1000, 9999)}"
@@ -97,7 +93,7 @@ class TransactionManager:
                     "status": "failed",
                     "error": "Insufficient balance",
                     "timestamp": datetime.now().isoformat(),
-                    "tx_id": tx_id
+                    "tx_id": tx_id,
                 }
 
             # Simulate transaction processing delay
@@ -116,13 +112,127 @@ class TransactionManager:
                     "asset": asset,
                     "direction": direction,
                     "size": size,
-                    "wallet": wallet_key[:10] + "..."
-                }
+                    "wallet": wallet_key[:10] + "...",
+                },
             }
 
         except Exception as e:
             return {
                 "status": "failed",
                 "error": str(e),
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
+
+
+class TradingSession:
+    def __init__(self, config: Dict):
+        self.config = config
+        self.wallet_manager = WalletManager(config.get("keys_file", "wallet_keys.txt"))
+        self.proxy_manager = ProxyManager(
+            config.get("proxy_file", "proxies.txt"), config.get("proxy_type", "regular")
+        )
+        self.transaction_manager = TransactionManager()
+
+    def execute_branch_trading(self):
+        branch_range = self.config.get("branch_wallet_range", (2, 5))
+        max_branches = self.config.get("max_parallel_branches", 5)
+
+        wallets = self.wallet_manager.wallets.copy()
+        if self.config.get("enable_shuffling", True):
+            random.shuffle(wallets)
+
+        active_branches = 0
+        while wallets and active_branches < max_branches:
+            branch_size = random.randint(*branch_range)
+            if len(wallets) < branch_size:
+                break
+
+            branch_wallets = wallets[:branch_size]
+            wallets = wallets[branch_size:]
+
+            # Split into long and short positions
+            long_count = random.randint(1, branch_size - 1)
+            short_count = branch_size - long_count
+
+            self._process_branch(branch_wallets, long_count, short_count)
+            active_branches += 1
+
+    def execute_parallel_trading(self):
+        thread_count = self.config.get("thread_count", 10)
+        delay_range = self.config.get("launch_delay", (0, 3600))
+
+        wallets = self.wallet_manager.wallets.copy()
+        if self.config.get("enable_shuffling", True):
+            random.shuffle(wallets)
+
+        for i in range(0, len(wallets), thread_count):
+            batch = wallets[i : i + thread_count]
+            for wallet in batch:
+                delay = random.uniform(delay_range[0], delay_range[1])
+                time.sleep(delay)
+                self._process_wallet(wallet)
+
+    def _process_wallet(self, wallet_key: str):
+        if not self.wallet_manager.wallets:  # Additional check prior to the trade
+            return  # Exit if no available wallets
+
+        wallet_index = self.wallet_manager.wallets.index(wallet_key)
+        wallet = self.wallet_manager.get_next_wallet(wallet_index)
+        if not wallet:
+            return
+
+        proxy = self.proxy_manager.get_proxy(
+            self.wallet_manager.wallets.index(wallet_key)
+        )
+
+        # Execute trade based on configuration
+        asset = random.choice(self.config.get("trading_assets", ["BTC", "ETH", "SOL"]))
+        direction = self._get_trade_direction()
+        size = self._get_trade_size()
+
+        result = self.transaction_manager.execute_trade(
+            wallet_key, asset, direction, size, proxy
+        )
+
+    def _process_branch(self, wallets: List[str], long_count: int, short_count: int):
+        total_size = self._get_trade_size()
+
+        # Process long positions
+        if long_count > 0:
+            long_size = total_size / long_count
+            for wallet in wallets[:long_count]:
+                self._process_wallet_with_size(wallet, "long", long_size)
+
+        # Process short positions
+        if short_count > 0:
+            short_size = total_size / short_count
+            for wallet in wallets[long_count:]:
+                self._process_wallet_with_size(wallet, "short", short_size)
+
+    def _get_trade_direction(self) -> str:
+        direction_config = self.config.get("position_direction", "random")
+        if direction_config == "random":
+            return random.choice(["long", "short"])
+        return direction_config
+
+    def _get_trade_size(self) -> float:
+        volume_range = self.config.get("volume_percentage_range", (10, 50))
+        return random.uniform(*volume_range)
+
+    def _process_wallet_with_size(
+        self, wallet: str, direction: str, size: float
+    ) -> Dict[str, Any]:
+        proxy = self.proxy_manager.get_proxy(self.wallet_manager.wallets.index(wallet))
+        asset = random.choice(self.config.get("trading_assets", ["BTC", "ETH", "SOL"]))
+
+        result = self.transaction_manager.execute_trade(
+            wallet, asset, direction, size, proxy
+        )
+
+        return result
+
+    def run_session(self, execution_mode: str = "branch"):
+        if execution_mode == "branch":
+            self.execute_branch_trading()
+        elif execution_mode == "parallel":
+            self.execute_parallel_trading()
