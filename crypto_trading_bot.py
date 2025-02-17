@@ -1,3 +1,4 @@
+import csv
 import hashlib
 import hmac
 import logging
@@ -159,6 +160,7 @@ class TradingSession:
         )
         self.transaction_manager = TransactionManager()
         self.setup_logging()
+        self.csv_file = self._setup_csv_file()
 
     def setup_logging(self):
         if self.config.get('enable_logs', True):
@@ -169,6 +171,52 @@ class TradingSession:
                 level=logging.INFO,
                 format='%(asctime)s - %(message)s'
             )
+
+    def _setup_csv_file(self) -> str:
+        """Setup CSV file for recording trade results"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        csv_filename = f"trade_results_{timestamp}.csv"
+
+        # Create directory if it doesn't exist
+        os.makedirs('trade_results', exist_ok=True)
+        csv_path = os.path.join('trade_results', csv_filename)
+
+        # Write CSV header
+        with open(csv_path, 'w', newline='') as csvfile:
+            fieldnames = ['timestamp', 'wallet', 'asset', 'direction', 'size',
+                          'status', 'transaction_hash', 'error']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+
+        logging.info(f"Created CSV file for trade results: {csv_path}")
+        return csv_path
+
+    def _record_trade_to_csv(self, result: Dict[str, Any], wallet: str):
+        """Record trade result to CSV file"""
+        with open(self.csv_file, 'a', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=[
+                'timestamp', 'wallet', 'asset', 'direction', 'size',
+                'status', 'transaction_hash', 'error'
+            ])
+
+            # Prepare row data
+            row = {
+                'timestamp': result.get('timestamp', datetime.now().isoformat()),
+                # 'wallet': wallet[:10] + '...' if wallet else 'unknown',
+                'wallet': wallet if wallet else 'unknown',
+                'status': result.get('status', 'unknown'),
+                'transaction_hash': result.get('transaction_hash', ''),
+                'error': result.get('error', '')
+            }
+
+            # Add details if available
+            if 'details' in result:
+                row['asset'] = result['details'].get('asset', '')
+                row['direction'] = result['details'].get('direction', '')
+                row['size'] = result['details'].get('size', '')
+
+            writer.writerow(row)
+            logging.info(f"Recorded trade result to CSV: {row}")
 
     def execute_branch_trading(self):
         branch_range = self.config.get("branch_wallet_range", (2, 5))
@@ -232,6 +280,9 @@ class TradingSession:
             wallet_key, asset, direction, size, proxy
         )
 
+        # Record trade result to CSV
+        self._record_trade_to_csv(result, wallet_key)
+
         if self.config.get('enable_logs', True):
             logging.info(f"Wallet {wallet_key[:8]}: {result}")
 
@@ -269,6 +320,9 @@ class TradingSession:
         result = self.transaction_manager.execute_trade(
             wallet, asset, direction, size, proxy
         )
+
+        # Record trade result to CSV
+        self._record_trade_to_csv(result, wallet)
 
         if self.config.get('enable_logs', True):
             logging.info(f"Branch trade - Wallet {wallet[:8]}: {result}")
