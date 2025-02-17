@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import logging
 import os
 import random
 import requests
@@ -7,26 +8,36 @@ import time
 
 from base64 import b64encode
 from datetime import datetime
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any
+
+
+# Setup logging configuration
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class WalletManager:
     def __init__(self, keys_file: str = "wallet_keys.txt"):
         self.keys_file = keys_file
         self.wallets = self._load_wallets()
+        if not self.wallets:  # Checking the available wallets after downloading
+            logging.error("[ERROR] No available wallets fro making transactions.")
+        logging.info(f"Loaded wallets: {self.wallets}")
 
     def _load_wallets(self) -> List[str]:
         if not os.path.exists(self.keys_file):
+            logging.warning(f"Wallet file {self.keys_file} not found.")
             return []
 
         with open(self.keys_file, "r") as f:
             wallets = [line.strip() for line in f if line.strip()]
+            logging.info(f"Wallets loaded: {wallets}")
             return wallets
 
     def add_wallet(self, private_key: str):
         with open(self.keys_file, "a") as f:
             f.write(f"{private_key}\n")
         self.wallets.append(private_key)
+        logging.info(f"Added wallet: {private_key}")
 
     def get_next_wallet(self, index: int) -> str:
         if 0 <= index < len(self.wallets):
@@ -39,6 +50,10 @@ class ProxyManager:
         self.proxy_file = proxy_file
         self.proxy_type = proxy_type
         self.proxies = self._load_proxies()
+        if not self.proxies:
+            logging.error("[ERROR] No available proxy servers.")
+        logging.info(f"Loaded proxies: {self.proxies}")
+
 
     def _load_proxies(self) -> List[Dict]:
         with open(self.proxy_file, "r") as f:
@@ -52,13 +67,19 @@ class ProxyManager:
                     )
                 else:  # Regular proxy
                     ip_port, auth = line.strip().split("@")
-                    proxies.append({"ip_port": ip_port, "auth": auth})
+                    proxies.append({
+                        'ip_port': ip_port,
+                        'auth': auth
+                    })
+            logging.info(f"Proxies loaded: {proxies}")
             return proxies
 
     def get_proxy(self, account_id: int) -> Dict:
         proxy = self.proxies[account_id % len(self.proxies)]
+        logging.info(f"Using proxy for account {account_id}: {proxy}")
         if self.proxy_type == "mobile" and "refresh_link" in proxy:
             requests.get(proxy["refresh_link"])
+            logging.info(f"Refreshed mobile proxy: {proxy['refresh_link']}")
         return proxy
 
 
@@ -72,6 +93,7 @@ class TransactionManager:
 
     def get_random_user_agent(self) -> str:
         user_agent = random.choice(self.user_agents)
+        logging.info(f"Selected user agent: {user_agent}")
         return user_agent
 
     def _generate_signature(self, private_key: str, message: str) -> str:
@@ -86,9 +108,11 @@ class TransactionManager:
         try:
             # Generate transaction ID
             tx_id = f"tx_{int(time.time())}_{random.randint(1000, 9999)}"
+            logging.info(f"Executing trade: {tx_id} for {wallet_key} - {direction} {size} of {asset}")
 
             # Simulate transaction validation
             if size > 10000:
+                logging.warning(f"Trade failed for {wallet_key}: Insufficient balance")
                 return {
                     "status": "failed",
                     "error": "Insufficient balance",
@@ -103,6 +127,7 @@ class TransactionManager:
             message = f"{tx_id}:{asset}:{direction}:{size}"
             signature = self._generate_signature(wallet_key, message)
 
+            logging.info(f"Trade executed successfully: {tx_id}")
             return {
                 "status": "success",
                 "transaction_hash": tx_id,
@@ -117,6 +142,7 @@ class TransactionManager:
             }
 
         except Exception as e:
+            logging.error(f"Trade execution failed: {str(e)}")
             return {
                 "status": "failed",
                 "error": str(e),
@@ -132,6 +158,17 @@ class TradingSession:
             config.get("proxy_file", "proxies.txt"), config.get("proxy_type", "regular")
         )
         self.transaction_manager = TransactionManager()
+        self.setup_logging()
+
+    def setup_logging(self):
+        if self.config.get('enable_logs', True):
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            log_filename = f"trading_{len(self.wallet_manager.wallets)}_{timestamp}.txt"
+            logging.basicConfig(
+                filename=log_filename,
+                level=logging.INFO,
+                format='%(asctime)s - %(message)s'
+            )
 
     def execute_branch_trading(self):
         branch_range = self.config.get("branch_wallet_range", (2, 5))
@@ -179,6 +216,7 @@ class TradingSession:
         wallet_index = self.wallet_manager.wallets.index(wallet_key)
         wallet = self.wallet_manager.get_next_wallet(wallet_index)
         if not wallet:
+            logging.error(f"[ERROR] Wallet with the index {wallet_index} was not found.")
             return
 
         proxy = self.proxy_manager.get_proxy(
@@ -193,6 +231,9 @@ class TradingSession:
         result = self.transaction_manager.execute_trade(
             wallet_key, asset, direction, size, proxy
         )
+
+        if self.config.get('enable_logs', True):
+            logging.info(f"Wallet {wallet_key[:8]}: {result}")
 
     def _process_branch(self, wallets: List[str], long_count: int, short_count: int):
         total_size = self._get_trade_size()
@@ -229,13 +270,22 @@ class TradingSession:
             wallet, asset, direction, size, proxy
         )
 
+        if self.config.get('enable_logs', True):
+            logging.info(f"Branch trade - Wallet {wallet[:8]}: {result}")
+
         return result
 
     def run_session(self, execution_mode: str = "branch"):
+        logging.info(f"Running session with execution mode: {execution_mode}")  # Ou
         if execution_mode == "branch":
+            logging.info("Execution mode is 'branch', proceeding with branch trading.")
             self.execute_branch_trading()
         elif execution_mode == "parallel":
+            logging.info("Execution mode is 'parallel', proceeding with parallel trading.")  #
             self.execute_parallel_trading()
+        else:
+            logging.error(f"Invalid execution mode: {execution_mode}")  # Если режим некорректный
+            logging.error(f"Invalid execution mode: {execution_mode}")
 
 
 if __name__ == "__main__":

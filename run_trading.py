@@ -1,7 +1,15 @@
+import logging
+
 from crypto_trading_bot import TradingSession
 
 
 def main():
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+
     # Trading configuration
     config = {
         "keys_file": "wallet_keys.txt",
@@ -22,12 +30,20 @@ def main():
     # Initialize trading session
     session = TradingSession(config)
 
-    # Test parallel trading
-    session.execute_parallel_trading()
+    try:
 
-    # Test branch trading
-    session.execute_branch_trading()
+        # Test parallel trading
+        logging.info("Starting parallel trading test...")
+        session.execute_parallel_trading()
+        logging.info("Parallel trading completed")
 
+        # Test branch trading
+        logging.info("Starting branch trading test...")
+        session.execute_branch_trading()
+        logging.info("Branch trading completed")
+
+    except Exception as e:
+        logging.error(f"Trading error: {str(e)}")
 
 if __name__ == "__main__":
     main()
