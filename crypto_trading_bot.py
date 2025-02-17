@@ -159,7 +159,7 @@ class TradingSession:
 
     def execute_parallel_trading(self):
         thread_count = self.config.get("thread_count", 10)
-        delay_range = self.config.get("launch_delay", (0, 3600))
+        delay_range = self.config.get("launch_delay", (0, 20))
 
         wallets = self.wallet_manager.wallets.copy()
         if self.config.get("enable_shuffling", True):
@@ -236,3 +236,26 @@ class TradingSession:
             self.execute_branch_trading()
         elif execution_mode == "parallel":
             self.execute_parallel_trading()
+
+
+if __name__ == "__main__":
+    # Example configuration
+    config = {
+        "keys_file": "wallet_keys.txt",
+        "proxy_file": "proxies.txt",
+        "proxy_type": "regular",
+        "enable_logs": True,
+        "enable_shuffling": True,
+        "thread_count": 10,
+        "launch_delay": (0, 20),
+        "branch_wallet_range": (2, 5),
+        "max_parallel_branches": 5,
+        "trading_assets": ["BTC", "ETH", "SOL"],
+        "position_direction": "random",
+        "volume_percentage_range": (10, 50),
+    }
+
+    # Initialize and run trading session
+    session = TradingSession(config)
+
+    session.run_session(execution_mode="branch")  # or "parallel"
