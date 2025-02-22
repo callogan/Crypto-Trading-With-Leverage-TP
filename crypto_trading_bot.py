@@ -11,6 +11,8 @@ from base64 import b64encode
 from datetime import datetime
 from typing import List, Dict, Any
 
+from csv_writer import CSVWriter
+
 
 # Setup logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -21,18 +23,18 @@ class WalletManager:
         self.keys_file = keys_file
         self.wallets = self._load_wallets()
         if not self.wallets:  # Checking the available wallets after downloading
-            logging.error("[ERROR] No available wallets fro making transactions.")
-        logging.info(f"Loaded wallets: {self.wallets}")
+            logger.error("[ERROR] No available wallets fro making transactions.")
+        logger.info(f"Loaded wallets: {self.wallets}")
 
     def _load_wallets(self) -> List[str]:
         """Load wallet private keys from file"""
         if not os.path.exists(self.keys_file):
-            logging.warning(f"Wallet file {self.keys_file} not found.")
+            logger.warning(f"Wallet file {self.keys_file} not found.")
             return []
 
         with open(self.keys_file, "r") as f:
             wallets = [line.strip() for line in f if line.strip()]
-            logging.info(f"Wallets loaded: {wallets}")
+            logger.info(f"Wallets loaded: {wallets}")
             return wallets
 
     def add_wallet(self, private_key: str):
@@ -40,7 +42,7 @@ class WalletManager:
         with open(self.keys_file, "a") as f:
             f.write(f"{private_key}\n")
         self.wallets.append(private_key)
-        logging.info(f"Added wallet: {private_key}")
+        logger.info(f"Added wallet: {private_key}")
 
     def get_next_wallet(self, index: int) -> str:
         """Get next wallet from the list"""
@@ -55,8 +57,8 @@ class ProxyManager:
         self.proxy_type = proxy_type
         self.proxies = self._load_proxies()
         if not self.proxies:
-            logging.error("[ERROR] No available proxy servers.")
-        logging.info(f"Loaded proxies: {self.proxies}")
+            logger.error("[ERROR] No available proxy servers.")
+        logger.info(f"Loaded proxies: {self.proxies}")
 
 
     def _load_proxies(self) -> List[Dict]:
@@ -76,16 +78,16 @@ class ProxyManager:
                         'ip_port': ip_port,
                         'auth': auth
                     })
-            logging.info(f"Proxies loaded: {proxies}")
+            logger.info(f"Proxies loaded: {proxies}")
             return proxies
 
     def get_proxy(self, account_id: int) -> Dict:
         """Get proxy for specific account"""
         proxy = self.proxies[account_id % len(self.proxies)]
-        logging.info(f"Using proxy for account {account_id}: {proxy}")
+        logger.info(f"Using proxy for account {account_id}: {proxy}")
         if self.proxy_type == "mobile" and "refresh_link" in proxy:
             requests.get(proxy["refresh_link"])
-            logging.info(f"Refreshed mobile proxy: {proxy['refresh_link']}")
+            logger.info(f"Refreshed mobile proxy: {proxy['refresh_link']}")
         return proxy
 
 
@@ -93,16 +95,12 @@ class TransactionManager:
     """Handles trading transactions without Web3 dependency"""
 
     def __init__(self):
-        self.user_agents = [
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-            "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36",
-        ]
+        self.user_agents = USER_AGENTS
 
     def get_random_user_agent(self) -> str:
         """Get user agent generated randomly"""
         user_agent = random.choice(self.user_agents)
-        logging.info(f"Selected user agent: {user_agent}")
+        logger.info(f"Selected user agent: {user_agent}")
         return user_agent
 
     def _generate_signature(self, private_key: str, message: str) -> str:
@@ -119,11 +117,11 @@ class TransactionManager:
         try:
             # Generate transaction ID
             tx_id = f"tx_{int(time.time())}_{random.randint(1000, 9999)}"
-            logging.info(f"Executing trade: {tx_id} for {wallet_key} - {direction} {size} of {asset}")
+            logger.info(f"Executing trade: {tx_id} for {wallet_key} - {direction} {size} of {asset}")
 
             # Simulate transaction validation
             if size > 10000:
-                logging.warning(f"Trade failed for {wallet_key}: Insufficient balance")
+                logger.warning(f"Trade failed for {wallet_key}: Insufficient balance")
                 return {
                     "status": "failed",
                     "error": "Insufficient balance",
@@ -138,7 +136,7 @@ class TransactionManager:
             message = f"{tx_id}:{asset}:{direction}:{size}"
             signature = self._generate_signature(wallet_key, message)
 
-            logging.info(f"Trade executed successfully: {tx_id}")
+            logger.info(f"Trade executed successfully: {tx_id}")
             return {
                 "status": "success",
                 "transaction_hash": tx_id,
@@ -153,7 +151,7 @@ class TransactionManager:
             }
 
         except Exception as e:
-            logging.error(f"Trade execution failed: {str(e)}")
+            logger.error(f"Trade execution failed: {str(e)}")
             return {
                 "status": "failed",
                 "error": str(e),
@@ -170,64 +168,18 @@ class TradingSession:
         )
         self.transaction_manager = TransactionManager()
         self.setup_logging()
-        self.csv_file = self._setup_csv_file()
+        self.csv_writer = CSVWriter()
+        self.active_branches = 0
+        self.thread_count = config.get("thread_count", 10)
 
     def setup_logging(self):
         """Setup logging configuration"""
         if self.config.get('enable_logs', True):
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             log_filename = f"trading_{len(self.wallet_manager.wallets)}_{timestamp}.txt"
-            logging.basicConfig(
-                filename=log_filename,
-                level=logging.INFO,
-                format='%(asctime)s - %(message)s'
-            )
-
-    def _setup_csv_file(self) -> str:
-        """Setup CSV file for recording trade results"""
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        csv_filename = f"trade_results_{timestamp}.csv"
-
-        # Create directory if it doesn't exist
-        os.makedirs('trade_results', exist_ok=True)
-        csv_path = os.path.join('trade_results', csv_filename)
-
-        # Write CSV header
-        with open(csv_path, 'w', newline='') as csvfile:
-            fieldnames = ['timestamp', 'wallet', 'asset', 'direction', 'size',
-                          'status', 'transaction_hash', 'error']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-
-        logging.info(f"Created CSV file for trade results: {csv_path}")
-        return csv_path
-
-    def _record_trade_to_csv(self, result: Dict[str, Any], wallet: str):
-        """Record trade result to CSV file"""
-        with open(self.csv_file, 'a', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=[
-                'timestamp', 'wallet', 'asset', 'direction', 'size',
-                'status', 'transaction_hash', 'error'
-            ])
-
-            # Prepare row data
-            row = {
-                'timestamp': result.get('timestamp', datetime.now().isoformat()),
-                # 'wallet': wallet[:10] + '...' if wallet else 'unknown',
-                'wallet': wallet if wallet else 'unknown',
-                'status': result.get('status', 'unknown'),
-                'transaction_hash': result.get('transaction_hash', ''),
-                'error': result.get('error', '')
-            }
-
-            # Add details if available
-            if 'details' in result:
-                row['asset'] = result['details'].get('asset', '')
-                row['direction'] = result['details'].get('direction', '')
-                row['size'] = result['details'].get('size', '')
-
-            writer.writerow(row)
-            logging.info(f"Recorded trade result to CSV: {row}")
+            file_handler = logging.FileHandler(log_filename)
+            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+            logger.addHandler(file_handler)
 
     def execute_branch_trading(self):
         """Execute trading with branches"""
@@ -238,8 +190,8 @@ class TradingSession:
         if self.config.get("enable_shuffling", True):
             random.shuffle(wallets)
 
-        active_branches = 0
-        while wallets and active_branches < max_branches:
+        self.active_branches = 0
+        while wallets and self.active_branches < max_branches:
             branch_size = random.randint(*branch_range)
             if len(wallets) < branch_size:
                 break
@@ -252,7 +204,7 @@ class TradingSession:
             short_count = branch_size - long_count
 
             self._process_branch(branch_wallets, long_count, short_count)
-            active_branches += 1
+            self.active_branches += 1
 
     def execute_parallel_trading(self):
         """Execute trading in parallel threads"""
@@ -272,18 +224,16 @@ class TradingSession:
 
     def _process_wallet(self, wallet_key: str):
         """Process individual wallet"""
-        if not self.wallet_manager.wallets:  # Additional check prior to the trade
-            return  # Exit if no available wallets
+        if not self.wallet_manager.wallets:
+            return
 
         wallet_index = self.wallet_manager.wallets.index(wallet_key)
         wallet = self.wallet_manager.get_next_wallet(wallet_index)
         if not wallet:
-            logging.error(f"[ERROR] Wallet with the index {wallet_index} was not found.")
+            logger.error(f"[ERROR] Wallet with the index {wallet_index} was not found.")
             return
 
-        proxy = self.proxy_manager.get_proxy(
-            self.wallet_manager.wallets.index(wallet_key)
-        )
+        proxy = self.proxy_manager.get_proxy(wallet_index)
 
         # Execute trade based on configuration
         asset = random.choice(self.config.get("trading_assets", ["BTC", "ETH", "SOL"]))
@@ -294,11 +244,22 @@ class TradingSession:
             wallet_key, asset, direction, size, proxy
         )
 
-        # Record trade result to CSV
-        self._record_trade_to_csv(result, wallet_key)
+        # Record trade result using CSVWriter
+        trade_data = {
+            'timestamp': result.get('timestamp', datetime.now().isoformat()),
+            'wallet': wallet_key,
+            'direction': direction,
+            'size': size,
+            'status': result.get('status', 'unknown'),
+            'active_branches': self.active_branches,
+            'thread_count': self.thread_count,
+            'transaction_hash': result.get('transaction_hash', ''),
+            'error': result.get('error', '')
+        }
+        self.csv_writer.record_trade(trade_data)
 
         if self.config.get('enable_logs', True):
-            logging.info(f"Wallet {wallet_key[:8]}: {result}")
+            logger.info(f"Wallet {wallet_key[:8]}: {result}")
 
     def _process_branch(self, wallets: List[str], long_count: int, short_count: int):
         """Process branch of wallets"""
@@ -340,25 +301,35 @@ class TradingSession:
         )
 
         # Record trade result to CSV
-        self._record_trade_to_csv(result, wallet)
+        self.csv_writer.record_trade({
+            'timestamp': result.get('timestamp', datetime.now().isoformat()),
+            'wallet': wallet,
+            'direction': direction,
+            'size': size,
+            'status': result.get('status', 'unknown'),
+            'active_branches': self.active_branches,
+            'thread_count': self.thread_count,
+            'transaction_hash': result.get('transaction_hash', ''),
+            'error': result.get('error', '')
+        })
 
         if self.config.get('enable_logs', True):
-            logging.info(f"Branch trade - Wallet {wallet[:8]}: {result}")
+            logger.info(f"Branch trade - Wallet {wallet[:8]}: {result}")
 
         return result
 
     def run_session(self, execution_mode: str = "branch"):
         """Run the trading session based on the execution mode"""
-        logging.info(f"Running session with execution mode: {execution_mode}")  # Ou
+        logger.info(f"Running session with execution mode: {execution_mode}")  # Ou
         if execution_mode == "branch":
-            logging.info("Execution mode is 'branch', proceeding with branch trading.")
+            logger.info("Execution mode is 'branch', proceeding with branch trading.")
             self.execute_branch_trading()
         elif execution_mode == "parallel":
-            logging.info("Execution mode is 'parallel', proceeding with parallel trading.")  #
+            logger.info("Execution mode is 'parallel', proceeding with parallel trading.")  #
             self.execute_parallel_trading()
         else:
-            logging.error(f"Invalid execution mode: {execution_mode}")  # Если режим некорректный
-            logging.error(f"Invalid execution mode: {execution_mode}")
+            logger.error(f"Invalid execution mode: {execution_mode}")  # Если режим некорректный
+            logger.error(f"Invalid execution mode: {execution_mode}")
 
 
 if __name__ == "__main__":
