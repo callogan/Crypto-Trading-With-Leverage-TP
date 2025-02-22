@@ -1,4 +1,3 @@
-import csv
 import hmac
 import hashlib
 import logging
@@ -12,6 +11,7 @@ from datetime import datetime
 from typing import List, Dict, Any
 
 from csv_writer import CSVWriter
+from config import logger, TRADING_CONFIG, USER_AGENTS
 
 
 # Setup logging configuration
@@ -209,7 +209,7 @@ class TradingSession:
     def execute_parallel_trading(self):
         """Execute trading in parallel threads"""
         thread_count = self.config.get("thread_count", 10)
-        delay_range = self.config.get("launch_delay", (0, 20))
+        delay_range = self.config.get("launch_delay", (0, 3600))
 
         wallets = self.wallet_manager.wallets.copy()
         if self.config.get("enable_shuffling", True):
@@ -325,31 +325,13 @@ class TradingSession:
             logger.info("Execution mode is 'branch', proceeding with branch trading.")
             self.execute_branch_trading()
         elif execution_mode == "parallel":
-            logger.info("Execution mode is 'parallel', proceeding with parallel trading.")  #
+            logger.info("Execution mode is 'parallel', proceeding with parallel trading.")
             self.execute_parallel_trading()
         else:
-            logger.error(f"Invalid execution mode: {execution_mode}")  # Если режим некорректный
             logger.error(f"Invalid execution mode: {execution_mode}")
 
 
 if __name__ == "__main__":
-    # Example configuration
-    config = {
-        "keys_file": "wallet_keys.txt",
-        "proxy_file": "proxies.txt",
-        "proxy_type": "regular",
-        "enable_logs": True,
-        "enable_shuffling": True,
-        "thread_count": 10,
-        "launch_delay": (0, 20),
-        "branch_wallet_range": (2, 5),
-        "max_parallel_branches": 5,
-        "trading_assets": ["BTC", "ETH", "SOL"],
-        "position_direction": "random",
-        "volume_percentage_range": (10, 50),
-    }
-
-    # Initialize and run trading session
-    session = TradingSession(config)
-
-    session.run_session(execution_mode="branch")  # or "parallel"
+    session = TradingSession(TRADING_CONFIG)
+    execution_mode=TRADING_CONFIG.get("execution_mode")
+    session.run_session(execution_mode=execution_mode)
