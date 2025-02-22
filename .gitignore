@@ -6,3 +6,4 @@ trade_results
 .tox/
 .coverage
 .cache
+logs/
