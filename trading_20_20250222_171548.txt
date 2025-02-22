@@ -1,0 +1,66 @@
+2025-02-22 17:15:48,035 - Running session with execution mode: branch
+2025-02-22 17:15:48,036 - Execution mode is 'branch', proceeding with branch trading.
+2025-02-22 17:15:48,036 - Using proxy for account 0: {'ip_port': '192.168.1.1:8080', 'auth': 'user1:pass1'}
+2025-02-22 17:15:48,037 - Executing trade: tx_1740237348_4254 for 0x4e3f2d27b44c0f18b1c94a1834e3d94aef4cd0d2ed4c722245688c83a53f0a1b - long 24.06944712566853 of BTC
+2025-02-22 17:15:49,137 - Trade executed successfully: tx_1740237348_4254
+2025-02-22 17:15:49,140 - Branch trade - Wallet 0x4e3f2d: {'status': 'success', 'transaction_hash': 'tx_1740237348_4254', 'signature': 'mvdEcsQnH3hq5HBAHcuJUfpJcxmzXyudnChdsNdqgR4=', 'timestamp': '2025-02-22T17:15:49.138608', 'details': {'asset': 'BTC', 'direction': 'long', 'size': 24.06944712566853, 'wallet': '0x4e3f2d27...'}}
+2025-02-22 17:15:49,157 - Using proxy for account 14: {'ip_port': '192.168.1.15:8080', 'auth': 'user15:pass15'}
+2025-02-22 17:15:49,157 - Executing trade: tx_1740237349_1185 for 0x2f15822b506fdcea05e6a98452f1b0ba56d54e83c319956032aca51b1a754718 - short 24.06944712566853 of ETH
+2025-02-22 17:15:50,520 - Trade executed successfully: tx_1740237349_1185
+2025-02-22 17:15:50,523 - Branch trade - Wallet 0x2f1582: {'status': 'success', 'transaction_hash': 'tx_1740237349_1185', 'signature': '/S5+c69MHsDrTMjrpMBYHG19P84z5HYcwWfWCPab13g=', 'timestamp': '2025-02-22T17:15:50.521435', 'details': {'asset': 'ETH', 'direction': 'short', 'size': 24.06944712566853, 'wallet': '0x2f15822b...'}}
+2025-02-22 17:15:50,524 - Using proxy for account 12: {'ip_port': '192.168.1.13:8080', 'auth': 'user13:pass13'}
+2025-02-22 17:15:50,525 - Executing trade: tx_1740237350_2585 for 0xfe88d042e74c2c39a439f70a37e2051a91af7028f78a1b27d17014e329da289e - long 8.039514330374564 of SOL
+2025-02-22 17:15:51,869 - Trade executed successfully: tx_1740237350_2585
+2025-02-22 17:15:51,872 - Branch trade - Wallet 0xfe88d0: {'status': 'success', 'transaction_hash': 'tx_1740237350_2585', 'signature': '4QNW/gwlFrwcexDiwhhHKa+F6hj89T/kYX7EJL2bd4E=', 'timestamp': '2025-02-22T17:15:51.869920', 'details': {'asset': 'SOL', 'direction': 'long', 'size': 8.039514330374564, 'wallet': '0xfe88d042...'}}
+2025-02-22 17:15:51,873 - Using proxy for account 11: {'ip_port': '192.168.1.12:8080', 'auth': 'user12:pass12', 'refresh_link': 'http://refresh.link/proxy12'}
+2025-02-22 17:15:51,873 - Executing trade: tx_1740237351_5224 for 0x0168a59ce65a333f7110501321181cf874850a4b07ed5da05b57acc9d8315655 - long 8.039514330374564 of BTC
+2025-02-22 17:15:52,505 - Trade executed successfully: tx_1740237351_5224
+2025-02-22 17:15:52,525 - Branch trade - Wallet 0x0168a5: {'status': 'success', 'transaction_hash': 'tx_1740237351_5224', 'signature': '82VJtayVrXXB1tGyWi/fZZnJmOEEpfToAs8hgRUmklk=', 'timestamp': '2025-02-22T17:15:52.506714', 'details': {'asset': 'BTC', 'direction': 'long', 'size': 8.039514330374564, 'wallet': '0x0168a59c...'}}
+2025-02-22 17:15:52,526 - Using proxy for account 9: {'ip_port': '192.168.1.10:8080', 'auth': 'user10:pass10', 'refresh_link': 'http://refresh.link/proxy10'}
+2025-02-22 17:15:52,527 - Executing trade: tx_1740237352_6665 for 0xf9ddd314c986ca87081c92adae68eb0a3f98ae3c7f65d8caaa2f68f48d704b12 - short 8.039514330374564 of ETH
+2025-02-22 17:15:54,500 - Trade executed successfully: tx_1740237352_6665
+2025-02-22 17:15:54,504 - Branch trade - Wallet 0xf9ddd3: {'status': 'success', 'transaction_hash': 'tx_1740237352_6665', 'signature': 'HCXHIkTQV5H1O+bvyQVH8CYgsVUy5pG1dEdmXQH88iE=', 'timestamp': '2025-02-22T17:15:54.501709', 'details': {'asset': 'ETH', 'direction': 'short', 'size': 8.039514330374564, 'wallet': '0xf9ddd314...'}}
+2025-02-22 17:15:54,505 - Using proxy for account 8: {'ip_port': '192.168.1.9:8080', 'auth': 'user9:pass9'}
+2025-02-22 17:15:54,506 - Executing trade: tx_1740237354_7976 for 0xfc64f4f6f42ef3f387f65147e731fb91765062e56140579d2952ca872ccc7cea - short 8.039514330374564 of SOL
+2025-02-22 17:15:55,387 - Trade executed successfully: tx_1740237354_7976
+2025-02-22 17:15:55,390 - Branch trade - Wallet 0xfc64f4: {'status': 'success', 'transaction_hash': 'tx_1740237354_7976', 'signature': 'CWtnp2hg2ExXwgoeNwEiMWrt2MbQhMGsYHtjw+VcCG0=', 'timestamp': '2025-02-22T17:15:55.388249', 'details': {'asset': 'SOL', 'direction': 'short', 'size': 8.039514330374564, 'wallet': '0xfc64f4f6...'}}
+2025-02-22 17:15:55,391 - Using proxy for account 5: {'ip_port': '192.168.1.6:8080', 'auth': 'user6:pass6', 'refresh_link': 'http://refresh.link/proxy6'}
+2025-02-22 17:15:55,392 - Executing trade: tx_1740237355_8671 for 0x9aab52a8066dc19f2cbdcabb46912382d6d3b601ff217fb194c54324ec258638 - long 11.505667071474733 of ETH
+2025-02-22 17:15:56,023 - Trade executed successfully: tx_1740237355_8671
+2025-02-22 17:15:56,026 - Branch trade - Wallet 0x9aab52: {'status': 'success', 'transaction_hash': 'tx_1740237355_8671', 'signature': 'fB8lknlApRSqWKc0TIWmt/VREbBANlmGdBXi4SUIofE=', 'timestamp': '2025-02-22T17:15:56.024029', 'details': {'asset': 'ETH', 'direction': 'long', 'size': 11.505667071474733, 'wallet': '0x9aab52a8...'}}
+2025-02-22 17:15:56,027 - Using proxy for account 7: {'ip_port': '192.168.1.8:8080', 'auth': 'user8:pass8', 'refresh_link': 'http://refresh.link/proxy8'}
+2025-02-22 17:15:56,027 - Executing trade: tx_1740237356_1285 for 0x8cedf7afef1a7f19f23616af6dea2c1f44262a48ec4ef763ddf8052d9c7f16a3 - long 11.505667071474733 of BTC
+2025-02-22 17:15:56,734 - Trade executed successfully: tx_1740237356_1285
+2025-02-22 17:15:56,737 - Branch trade - Wallet 0x8cedf7: {'status': 'success', 'transaction_hash': 'tx_1740237356_1285', 'signature': 'SzdLkVL5TXclraHbBvX8Yu3+eMg+nju9SlJNGMWDRp0=', 'timestamp': '2025-02-22T17:15:56.735395', 'details': {'asset': 'BTC', 'direction': 'long', 'size': 11.505667071474733, 'wallet': '0x8cedf7af...'}}
+2025-02-22 17:15:56,738 - Using proxy for account 1: {'ip_port': '192.168.1.2:8080', 'auth': 'user2:pass2', 'refresh_link': 'http://refresh.link/proxy1'}
+2025-02-22 17:15:56,739 - Executing trade: tx_1740237356_7355 for 0x1a4bc1a17d19b4c57b7cced6e1c4d1f1c616cd7c2cb597d9c8e38a78b1221c60 - long 11.505667071474733 of ETH
+2025-02-22 17:15:58,167 - Trade executed successfully: tx_1740237356_7355
+2025-02-22 17:15:58,169 - Branch trade - Wallet 0x1a4bc1: {'status': 'success', 'transaction_hash': 'tx_1740237356_7355', 'signature': '7rvLPvMJmeVdzPDB4cRtbXVsJif9rMCUCor2UY0YpXU=', 'timestamp': '2025-02-22T17:15:58.167059', 'details': {'asset': 'ETH', 'direction': 'long', 'size': 11.505667071474733, 'wallet': '0x1a4bc1a1...'}}
+2025-02-22 17:15:58,171 - Using proxy for account 19: {'ip_port': '192.168.1.20:8080', 'auth': 'user20:pass20', 'refresh_link': 'http://refresh.link/proxy20'}
+2025-02-22 17:15:58,171 - Executing trade: tx_1740237358_5457 for 0xdc2d3c25c88356819dc4f4e4349b3e19e63038cc04881c8d8b1a1fee8aff6b8b - short 34.5170012144242 of SOL
+2025-02-22 17:15:59,910 - Trade executed successfully: tx_1740237358_5457
+2025-02-22 17:15:59,912 - Branch trade - Wallet 0xdc2d3c: {'status': 'success', 'transaction_hash': 'tx_1740237358_5457', 'signature': 'OSXzPOjFtItQLX71v+IixUCAFGTysmfLFl7aThVbIyc=', 'timestamp': '2025-02-22T17:15:59.910859', 'details': {'asset': 'SOL', 'direction': 'short', 'size': 34.5170012144242, 'wallet': '0xdc2d3c25...'}}
+2025-02-22 17:15:59,913 - Using proxy for account 4: {'ip_port': '192.168.1.5:8080', 'auth': 'user5:pass5', 'refresh_link': 'http://refresh.link/proxy5'}
+2025-02-22 17:15:59,913 - Executing trade: tx_1740237359_5517 for 0x908377f991dc3aaabc83345c1584c9ede36bdf37b4d7fc61244717a5d82f31a6 - long 13.075124974674344 of SOL
+2025-02-22 17:16:00,552 - Trade executed successfully: tx_1740237359_5517
+2025-02-22 17:16:00,556 - Branch trade - Wallet 0x908377: {'status': 'success', 'transaction_hash': 'tx_1740237359_5517', 'signature': 'JKPTvCEzJB9SZRlDLzGP/c9DkUK6HZlIjid2o44FfHk=', 'timestamp': '2025-02-22T17:16:00.553538', 'details': {'asset': 'SOL', 'direction': 'long', 'size': 13.075124974674344, 'wallet': '0x908377f9...'}}
+2025-02-22 17:16:00,556 - Using proxy for account 17: {'ip_port': '192.168.1.18:8080', 'auth': 'user18:pass18', 'refresh_link': 'http://refresh.link/proxy18'}
+2025-02-22 17:16:00,556 - Executing trade: tx_1740237360_7143 for 0x7bcef80f0bc30bc269c3ae6924600da5bf1de16ef30af9d2269228cac6b05616 - short 13.075124974674344 of SOL
+2025-02-22 17:16:01,865 - Trade executed successfully: tx_1740237360_7143
+2025-02-22 17:16:01,868 - Branch trade - Wallet 0x7bcef8: {'status': 'success', 'transaction_hash': 'tx_1740237360_7143', 'signature': 'nqdzozFb+56kuIWUJMxXCLyjNteCTNRzJBLitV3ORZ4=', 'timestamp': '2025-02-22T17:16:01.866943', 'details': {'asset': 'SOL', 'direction': 'short', 'size': 13.075124974674344, 'wallet': '0x7bcef80f...'}}
+2025-02-22 17:16:01,869 - Using proxy for account 6: {'ip_port': '192.168.1.7:8080', 'auth': 'user7:pass7'}
+2025-02-22 17:16:01,869 - Executing trade: tx_1740237361_8296 for 0x678a1bd561d425203bd7f99c783d1a2b125de1b2cad1dadb9c92acf3399e98a1 - long 20.696349645967196 of SOL
+2025-02-22 17:16:03,478 - Trade executed successfully: tx_1740237361_8296
+2025-02-22 17:16:03,482 - Branch trade - Wallet 0x678a1b: {'status': 'success', 'transaction_hash': 'tx_1740237361_8296', 'signature': 'chePmQqQ8NwjwVn+HvFqOnpIh3c7CPWNJXgKjEgNyMw=', 'timestamp': '2025-02-22T17:16:03.479987', 'details': {'asset': 'SOL', 'direction': 'long', 'size': 20.696349645967196, 'wallet': '0x678a1bd5...'}}
+2025-02-22 17:16:03,482 - Using proxy for account 16: {'ip_port': '192.168.1.17:8080', 'auth': 'user17:pass17', 'refresh_link': 'http://refresh.link/proxy17'}
+2025-02-22 17:16:03,484 - Executing trade: tx_1740237363_1737 for 0xe2eb9c5648724b2106db18eabc0bd3dd977a40b6d3108d777e879dd5da437e02 - long 20.696349645967196 of ETH
+2025-02-22 17:16:04,836 - Trade executed successfully: tx_1740237363_1737
+2025-02-22 17:16:04,863 - Branch trade - Wallet 0xe2eb9c: {'status': 'success', 'transaction_hash': 'tx_1740237363_1737', 'signature': 'H7Yydki5bXef4A5ytdNj//OsqxL06+SPzJMWhonQ7Ao=', 'timestamp': '2025-02-22T17:16:04.836852', 'details': {'asset': 'ETH', 'direction': 'long', 'size': 20.696349645967196, 'wallet': '0xe2eb9c56...'}}
+2025-02-22 17:16:04,864 - Using proxy for account 2: {'ip_port': '192.168.1.3:8080', 'auth': 'user3:pass3'}
+2025-02-22 17:16:04,865 - Executing trade: tx_1740237364_8929 for 0x89b167f8b18a61a5b3c4cce8cc4f1ed7b8c9cd8d564227b82cf7d9da748fa2da - short 20.696349645967196 of ETH
+2025-02-22 17:16:05,988 - Trade executed successfully: tx_1740237364_8929
+2025-02-22 17:16:05,993 - Branch trade - Wallet 0x89b167: {'status': 'success', 'transaction_hash': 'tx_1740237364_8929', 'signature': 'l+mBaBQrSWJTvgkx3mAh5pvUkiJxrvDZwvoRFVP7wUE=', 'timestamp': '2025-02-22T17:16:05.990132', 'details': {'asset': 'ETH', 'direction': 'short', 'size': 20.696349645967196, 'wallet': '0x89b167f8...'}}
+2025-02-22 17:16:05,994 - Using proxy for account 10: {'ip_port': '192.168.1.11:8080', 'auth': 'user11:pass11', 'refresh_link': 'http://refresh.link/proxy11'}
+2025-02-22 17:16:05,995 - Executing trade: tx_1740237365_5627 for 0x387dc9310825a3d49eaa754f37946ca28c7f9f3c4df0cda7e4f8aad18135111d - short 20.696349645967196 of BTC
+2025-02-22 17:16:07,352 - Trade executed successfully: tx_1740237365_5627
+2025-02-22 17:16:07,355 - Branch trade - Wallet 0x387dc9: {'status': 'success', 'transaction_hash': 'tx_1740237365_5627', 'signature': 'xMXmttXSQF84/hIWLcfv04Tdm+Gb3h8U4X5wW9cM1Zc=', 'timestamp': '2025-02-22T17:16:07.353457', 'details': {'asset': 'BTC', 'direction': 'short', 'size': 20.696349645967196, 'wallet': '0x387dc931...'}}

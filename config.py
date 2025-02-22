@@ -1,6 +1,15 @@
 import logging
+import os
 from typing import Dict, List
+from datetime import datetime
 
+# Create logs directory if it doesn't exist
+LOG_DIR = "logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+
+# Generate session-specific log filename
+current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+session_log_file = os.path.join(LOG_DIR, f"trading_session_{current_time}.log")
 
 # Logging configuration
 LOGGING_CONFIG: Dict = {
@@ -8,7 +17,13 @@ LOGGING_CONFIG: Dict = {
     "level": logging.INFO,  # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
     "format": '%(asctime)s - %(levelname)s - %(message)s',
     "to_file": True,  # Enable/disable logging to file
+    "log_file": session_log_file,  # Session-specific log file
     "console_output": True,  # Enable/disable console output
+    # Optional: keep general log file as well
+    "general_log": {
+        "enabled": True,
+        "file": os.path.join(LOG_DIR, "trading_bot_general.log")
+    }
 }
 
 # Setup logging based on configuration
@@ -42,6 +57,11 @@ logger = logging.getLogger('trading_bot')
 # Disable logging if not enabled in config
 if not LOGGING_CONFIG["enabled"]:
     logger.disabled = True
+
+# Log session start with configuration details
+if LOGGING_CONFIG["enabled"]:
+    logger.info(f"Starting new trading session at {current_time}")
+    logger.info(f"Session log file: {session_log_file}")
 
 # Trading configuration
 TRADING_CONFIG: Dict = {
