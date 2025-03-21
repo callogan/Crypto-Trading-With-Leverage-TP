@@ -23,19 +23,31 @@ class WalletManager:
         self.keys_file = keys_file
         self.wallets = self._load_wallets()
         if not self.wallets:  # Checking the available wallets after downloading
-            logger.error("[ERROR] No available wallets fro making transactions.")
-        logger.info(f"Loaded wallets: {self.wallets}")
-
+            logger.error("[ERROR] No available wallets for making transactions.")
+        else:
+            for index in range(len(self.wallets)):
+                wallet_index = f"wallet_{index}"
+                logger.info(
+                    f"Loaded wallet - {wallet_index}"
+                )
     def _load_wallets(self) -> List[str]:
         """Load wallet private keys from file"""
         if not os.path.exists(self.keys_file):
             logger.warning(f"Wallet file {self.keys_file} not found.")
             return []
 
-        with open(self.keys_file, "r") as f:
-            wallets = [line.strip() for line in f if line.strip()]
-            logger.info(f"Wallets loaded: {wallets}")
-            return wallets
+        wallets = []
+        try:
+            with open(self.keys_file, "r") as f:
+                for index, line in enumerate(f):
+                    wallet_key = line.strip()
+                    if wallet_key:
+                        wallets.append(wallet_key)
+                        logger.info(
+                            f"Wallet loaded - Index: {index}")  
+        except Exception as e:
+            logger.error(f"Error loading wallets: {e}")
+        return wallets
 
     def add_wallet(self, private_key: str):
         """Add new wallet to the list"""
@@ -94,8 +106,9 @@ class ProxyManager:
 class TransactionManager:
     """Handles trading transactions without Web3 dependency"""
 
-    def __init__(self):
+    def __init__(self, wallet_manager):
         self.user_agents = USER_AGENTS
+        self.wallet_manager = wallet_manager        
 
     def get_random_user_agent(self) -> str:
         """Get user agent generated randomly"""
@@ -117,11 +130,12 @@ class TransactionManager:
         try:
             # Generate transaction ID
             tx_id = f"tx_{int(time.time())}_{random.randint(1000, 9999)}"
-            logger.info(f"Executing trade: {tx_id} for {wallet_key} - {direction} {size} of {asset}")
+            wallet_index = self.wallet_manager.wallets.index(wallet_key)
+            logger.info(f"Executing trade: {tx_id} for {wallet_index} - {direction} {size} of {asset}")
 
             # Simulate transaction validation
             if size > 10000:
-                logger.warning(f"Trade failed for {wallet_key}: Insufficient balance")
+                logger.warning(f"Trade failed for {wallet_index}: Insufficient balance")
                 return {
                     "status": "failed",
                     "error": "Insufficient balance",
@@ -146,7 +160,7 @@ class TransactionManager:
                     "asset": asset,
                     "direction": direction,
                     "size": size,
-                    "wallet": wallet_key[:10] + "...",
+                    "wallet": wallet_index,
                 },
             }
 
@@ -166,7 +180,7 @@ class TradingSession:
         self.proxy_manager = ProxyManager(
             config.get("proxy_file", "proxies.txt"), config.get("proxy_type", "regular")
         )
-        self.transaction_manager = TransactionManager()
+        self.transaction_manager = TransactionManager(self.wallet_manager)
         self.setup_logging()
         self.csv_writer = CSVWriter()
         self.active_branches = 0
@@ -247,7 +261,7 @@ class TradingSession:
         # Record trade result using CSVWriter
         trade_data = {
             'timestamp': result.get('timestamp', datetime.now().isoformat()),
-            'wallet': wallet_key,
+            'wallet': f"wallet_{wallet_index}",
             'direction': direction,
             'size': size,
             'status': result.get('status', 'unknown'),
@@ -259,7 +273,7 @@ class TradingSession:
         self.csv_writer.record_trade(trade_data)
 
         if self.config.get('enable_logs', True):
-            logger.info(f"Wallet {wallet_key[:8]}: {result}")
+            logger.info(f"Wallet {wallet_index}: {result}")
 
     def _process_branch(self, wallets: List[str], long_count: int, short_count: int):
         """Process branch of wallets"""
@@ -293,6 +307,7 @@ class TradingSession:
         self, wallet: str, direction: str, size: float
     ) -> Dict[str, Any]:
         """Process wallet with specific size and return result"""
+        wallet_index = self.wallet_manager.wallets.index(wallet)
         proxy = self.proxy_manager.get_proxy(self.wallet_manager.wallets.index(wallet))
         asset = random.choice(self.config.get("trading_assets", ["BTC", "ETH", "SOL"]))
 
@@ -303,7 +318,7 @@ class TradingSession:
         # Record trade result to CSV
         self.csv_writer.record_trade({
             'timestamp': result.get('timestamp', datetime.now().isoformat()),
-            'wallet': wallet,
+            'wallet': f"wallet_{wallet_index}",
             'direction': direction,
             'size': size,
             'status': result.get('status', 'unknown'),
